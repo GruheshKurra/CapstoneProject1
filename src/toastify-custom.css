@@ -1,0 +1,34 @@
+/* src/toastify-custom.css */
+.Toastify__toast-container {
+    font-family: 'Poppins', sans-serif;
+}
+
+.Toastify__toast {
+    font-family: 'Poppins', sans-serif;
+    background-color: #2D3748;
+    color: #FFFFFF;
+}
+
+.Toastify__toast--success {
+    background-color: #38A169;
+}
+
+.Toastify__toast--error {
+    background-color: #E53E3E;
+}
+
+.Toastify__toast--info {
+    background-color: #3182CE;
+}
+
+.Toastify__toast-body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.Toastify__close-button {
+    color: #FFFFFF;
+}
+
+.Toastify__progress-bar {
+    background-color: rgba(255, 255, 255, 0.7);
+}
