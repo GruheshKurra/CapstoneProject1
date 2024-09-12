@@ -5,6 +5,56 @@ import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
 
+const EditForm = ({ detail, onCancel, onSave }) => {
+	const [editedDetail, setEditedDetail] = useState({ ...detail });
+
+	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setEditedDetail(prev => ({
+			...prev,
+			[name]: name === "tech_stack" ? value.split(",").map(item => item.trim()) : value
+		}));
+	};
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		onSave(editedDetail);
+	};
+
+	return (
+		<form onSubmit={handleSubmit} className="space-y-4">
+			<input
+				type="text"
+				name="title"
+				value={editedDetail.title}
+				onChange={handleInputChange}
+				className="w-full p-2 bg-gray-700 text-white rounded"
+				required
+			/>
+			<textarea
+				name="description"
+				value={editedDetail.description}
+				onChange={handleInputChange}
+				className="w-full p-2 bg-gray-700 text-white rounded"
+				required
+			/>
+			<input
+				type="text"
+				name="tech_stack"
+				value={editedDetail.tech_stack.join(", ")}
+				onChange={handleInputChange}
+				className="w-full p-2 bg-gray-700 text-white rounded"
+				placeholder="Comma-separated tech stack"
+				required
+			/>
+			<div>
+				<button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Save</button>
+				<button type="button" onClick={onCancel} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+			</div>
+		</form>
+	);
+};
+
 const ProjectDetails = () => {
 	const [details, setDetails] = useState([]);
 	const [presentations, setPresentations] = useState([]);
@@ -13,7 +63,7 @@ const ProjectDetails = () => {
 	const [newDetail, setNewDetail] = useState({
 		title: "",
 		description: "",
-		tech_stack: "",
+		tech_stack: [],
 	});
 	const [newPresentation, setNewPresentation] = useState({
 		title: "",
@@ -61,15 +111,12 @@ const ProjectDetails = () => {
 		}
 	};
 
-	const handleInputChange = (e, id = null) => {
+	const handleNewDetailInputChange = (e) => {
 		const { name, value } = e.target;
-		if (id) {
-			setDetails(details.map(detail =>
-				detail.id === id ? { ...detail, [name]: name === "tech_stack" ? value.split(",") : value } : detail
-			));
-		} else {
-			setNewDetail({ ...newDetail, [name]: name === "tech_stack" ? value.split(",") : value });
-		}
+		setNewDetail(prev => ({
+			...prev,
+			[name]: name === "tech_stack" ? value.split(",").map(item => item.trim()) : value
+		}));
 	};
 
 	const handlePresentationInputChange = (e) => {
@@ -77,35 +124,37 @@ const ProjectDetails = () => {
 		setNewPresentation({ ...newPresentation, [name]: value });
 	};
 
-	const handleSubmit = async (e, id = null) => {
+	const handleSubmitNewDetail = async (e) => {
 		e.preventDefault();
 		try {
-			let detail = id ? details.find(d => d.id === id) : newDetail;
-			const { data, error } = id
-				? await supabase
-					.from("project_details")
-					.update({
-						title: detail.title,
-						description: detail.description,
-						tech_stack: detail.tech_stack,
-					})
-					.eq("id", id)
-				: await supabase
-					.from("project_details")
-					.insert([{
-						title: detail.title,
-						description: detail.description,
-						tech_stack: detail.tech_stack,
-					}]);
+			const { data, error } = await supabase
+				.from("project_details")
+				.insert([newDetail]);
 
 			if (error) throw error;
-			toast.success(id ? "Project detail updated successfully" : "New project detail added successfully");
-			setEditingId(null);
-			setNewDetail({ title: "", description: "", tech_stack: "" });
+			toast.success("New project detail added successfully");
+			setNewDetail({ title: "", description: "", tech_stack: [] });
 			fetchProjectDetails();
 		} catch (error) {
-			console.error("Error submitting project detail:", error);
-			toast.error("Failed to submit project detail");
+			console.error("Error submitting new project detail:", error);
+			toast.error("Failed to add new project detail");
+		}
+	};
+
+	const handleUpdateDetail = async (updatedDetail) => {
+		try {
+			const { error } = await supabase
+				.from("project_details")
+				.update(updatedDetail)
+				.eq("id", updatedDetail.id);
+
+			if (error) throw error;
+			toast.success("Project detail updated successfully");
+			setEditingId(null);
+			fetchProjectDetails();
+		} catch (error) {
+			console.error("Error updating project detail:", error);
+			toast.error("Failed to update project detail");
 		}
 	};
 
@@ -160,44 +209,19 @@ const ProjectDetails = () => {
 		setDeleteConfirmation(null);
 	};
 
-	const ProjectDetailCard = ({ detail, isEditing }) => (
+	const ProjectDetailCard = ({ detail }) => (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.5 }}
 			className="bg-gray-800 p-6 rounded-lg shadow-lg h-full flex flex-col justify-between"
 		>
-			{isEditing ? (
-				<form onSubmit={(e) => handleSubmit(e, detail.id)} className="space-y-4">
-					<input
-						type="text"
-						name="title"
-						value={detail.title}
-						onChange={(e) => handleInputChange(e, detail.id)}
-						className="w-full p-2 bg-gray-700 text-white rounded"
-						required
-					/>
-					<textarea
-						name="description"
-						value={detail.description}
-						onChange={(e) => handleInputChange(e, detail.id)}
-						className="w-full p-2 bg-gray-700 text-white rounded"
-						required
-					/>
-					<input
-						type="text"
-						name="tech_stack"
-						value={detail.tech_stack.join(", ")}
-						onChange={(e) => handleInputChange(e, detail.id)}
-						className="w-full p-2 bg-gray-700 text-white rounded"
-						placeholder="Comma-separated tech stack"
-						required
-					/>
-					<div>
-						<button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Save</button>
-						<button type="button" onClick={() => setEditingId(null)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
-					</div>
-				</form>
+			{editingId === detail.id ? (
+				<EditForm
+					detail={detail}
+					onCancel={() => setEditingId(null)}
+					onSave={handleUpdateDetail}
+				/>
 			) : (
 				<>
 					<div>
@@ -240,12 +264,12 @@ const ProjectDetails = () => {
 					className="mb-8"
 				>
 					<h2 className="text-2xl font-normal mb-4">Add New Project Detail</h2>
-					<form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
+					<form onSubmit={handleSubmitNewDetail} className="space-y-4">
 						<input
 							type="text"
 							name="title"
 							value={newDetail.title}
-							onChange={handleInputChange}
+							onChange={handleNewDetailInputChange}
 							placeholder="Title"
 							className="w-full p-2 bg-gray-700 text-white rounded"
 							required
@@ -253,7 +277,7 @@ const ProjectDetails = () => {
 						<textarea
 							name="description"
 							value={newDetail.description}
-							onChange={handleInputChange}
+							onChange={handleNewDetailInputChange}
 							placeholder="Description"
 							className="w-full p-2 bg-gray-700 text-white rounded"
 							required
@@ -261,8 +285,8 @@ const ProjectDetails = () => {
 						<input
 							type="text"
 							name="tech_stack"
-							value={newDetail.tech_stack}
-							onChange={handleInputChange}
+							value={newDetail.tech_stack.join(", ")}
+							onChange={handleNewDetailInputChange}
 							placeholder="Comma-separated tech stack"
 							className="w-full p-2 bg-gray-700 text-white rounded"
 							required
@@ -280,7 +304,6 @@ const ProjectDetails = () => {
 						<ProjectDetailCard
 							key={detail.id}
 							detail={detail}
-							isEditing={editingId === detail.id}
 						/>
 					))}
 				</div>
