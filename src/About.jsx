@@ -10,26 +10,28 @@ const ContentItem = ({ item, isAdmin, onEdit, onDelete }) => (
 		initial={{ opacity: 0, y: 20 }}
 		animate={{ opacity: 1, y: 0 }}
 		transition={{ duration: 0.5, delay: item.order_index * 0.1 }}
-		className="mb-6"
+		className="mb-12 bg-gray-800 rounded-lg shadow-lg overflow-hidden"
 	>
-		<h2 className="text-2xl font-normal mb-2">{item.title}</h2>
-		<p className="font-light text-lg">{item.content}</p>
-		{isAdmin && (
-			<div className="mt-2">
-				<button
-					onClick={() => onEdit(item)}
-					className="text-blue-400 hover:text-blue-300 mr-2"
-				>
-					Edit
-				</button>
-				<button
-					onClick={() => onDelete(item)}
-					className="text-red-400 hover:text-red-300"
-				>
-					Delete
-				</button>
-			</div>
-		)}
+		<div className="p-6">
+			<h2 className="text-2xl font-semibold mb-4 text-white">{item.title}</h2>
+			<p className="text-gray-300 leading-relaxed">{item.content}</p>
+			{isAdmin && (
+				<div className="mt-4 flex justify-end space-x-2">
+					<button
+						onClick={() => onEdit(item)}
+						className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-300"
+					>
+						Edit
+					</button>
+					<button
+						onClick={() => onDelete(item)}
+						className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition duration-300"
+					>
+						Delete
+					</button>
+				</div>
+			)}
+		</div>
 	</motion.div>
 );
 
@@ -44,34 +46,60 @@ const ContentForm = ({ item, onSubmit, onCancel }) => {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="mb-6">
-			<input
-				type="text"
-				value={title}
-				onChange={(e) => setTitle(e.target.value)}
-				placeholder="Title"
-				className="w-full p-2 mb-2 bg-gray-700 text-white rounded"
-				required
-			/>
-			<textarea
-				value={content}
-				onChange={(e) => setContent(e.target.value)}
-				placeholder="Content"
-				className="w-full p-2 mb-2 bg-gray-700 text-white rounded"
-				required
-				rows={4}
-			/>
-			<input
-				type="number"
-				value={orderIndex}
-				onChange={(e) => setOrderIndex(parseInt(e.target.value))}
-				placeholder="Order Index"
-				className="w-full p-2 mb-2 bg-gray-700 text-white rounded"
-				required
-			/>
-			<div>
-				<button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Save</button>
-				<button type="button" onClick={onCancel} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+		<form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+			<div className="mb-4">
+				<label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
+					Title
+				</label>
+				<input
+					type="text"
+					id="title"
+					value={title}
+					onChange={(e) => setTitle(e.target.value)}
+					className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
+					required
+				/>
+			</div>
+			<div className="mb-4">
+				<label htmlFor="content" className="block text-sm font-medium text-gray-300 mb-2">
+					Content
+				</label>
+				<textarea
+					id="content"
+					value={content}
+					onChange={(e) => setContent(e.target.value)}
+					className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
+					rows={4}
+					required
+				/>
+			</div>
+			<div className="mb-4">
+				<label htmlFor="orderIndex" className="block text-sm font-medium text-gray-300 mb-2">
+					Order Index
+				</label>
+				<input
+					type="number"
+					id="orderIndex"
+					value={orderIndex}
+					onChange={(e) => setOrderIndex(parseInt(e.target.value))}
+					className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
+					required
+				/>
+			</div>
+			<div className="flex justify-end space-x-2">
+				<button
+					type="button"
+					onClick={onCancel}
+					className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition duration-300"
+				>
+					Cancel
+				</button>
+				<button
+					type="submit"
+					className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+				>
+					Save
+				</button>
 			</div>
 		</form>
 	);
@@ -153,7 +181,7 @@ const About = () => {
 	};
 
 	if (error) {
-		return <div className="text-center text-white">Error: {error}</div>;
+		return <div className="text-center text-red-500">{error}</div>;
 	}
 
 	return (
@@ -162,20 +190,25 @@ const About = () => {
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.5 }}
-				className="text-5xl font-normal mb-8 text-center"
+				className="text-5xl font-normal mb-12 text-center text-white"
 			>
 				About VisionaryAI
 			</motion.h1>
 			<div className="max-w-3xl mx-auto">
 				{isAdmin && !isAdding && !editingItem && (
-					<div className="mb-6">
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5 }}
+						className="mb-8"
+					>
 						<button
 							onClick={() => setIsAdding(true)}
-							className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
+							className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold transition duration-300 shadow-lg"
 						>
 							Add New Content
 						</button>
-					</div>
+					</motion.div>
 				)}
 				{isAdding && (
 					<ContentForm
@@ -191,7 +224,9 @@ const About = () => {
 					/>
 				)}
 				{isLoading ? (
-					<div className="text-center text-white">Loading...</div>
+					<div className="flex justify-center items-center h-64">
+						<div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+					</div>
 				) : (
 					content.map((item) => (
 						<ContentItem

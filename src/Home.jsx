@@ -5,17 +5,27 @@ import { supabase } from "./supabaseClient";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
+import {
+	LightBulbIcon,
+	CubeTransparentIcon,
+	BeakerIcon,
+	CloudArrowDownIcon,
+	HeartIcon,
+	PencilIcon,
+	TrashIcon
+} from "@heroicons/react/24/outline";
 
 const FeatureCard = ({ feature, isAdmin, onEdit, onDelete }) => (
 	<motion.div
 		whileHover={{ scale: 1.05 }}
-		className="bg-gray-800 p-6 rounded-lg shadow-lg relative"
+		className="bg-gray-800 p-6 rounded-lg shadow-lg relative overflow-hidden"
 	>
-		<h3 className="text-xl font-normal mb-2">{feature.title}</h3>
-		<p className="text-gray-400 mb-4 font-light">{feature.description}</p>
+		<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+		<h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
+		<p className="text-gray-400 mb-4">{feature.description}</p>
 		<Link
 			to={feature.link}
-			className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
+			className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300"
 		>
 			Try it out
 		</Link>
@@ -23,15 +33,15 @@ const FeatureCard = ({ feature, isAdmin, onEdit, onDelete }) => (
 			<div className="absolute top-2 right-2 space-x-2">
 				<button
 					onClick={() => onEdit(feature)}
-					className="text-blue-400 hover:text-blue-300"
+					className="text-blue-400 hover:text-blue-300 transition duration-300"
 				>
-					Edit
+					<PencilIcon className="h-5 w-5" />
 				</button>
 				<button
 					onClick={() => onDelete(feature)}
-					className="text-red-400 hover:text-red-300"
+					className="text-red-400 hover:text-red-300 transition duration-300"
 				>
-					Delete
+					<TrashIcon className="h-5 w-5" />
 				</button>
 			</div>
 		)}
@@ -82,13 +92,13 @@ const FeatureForm = ({ feature, onSubmit, onCancel, modelUrls }) => {
 				<button
 					type="button"
 					onClick={onCancel}
-					className="px-4 py-2 bg-gray-600 text-white rounded"
+					className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition duration-300"
 				>
 					Cancel
 				</button>
 				<button
 					type="submit"
-					className="px-4 py-2 bg-blue-500 text-white rounded"
+					className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
 				>
 					{feature ? "Update" : "Add"} Feature
 				</button>
@@ -190,7 +200,7 @@ const Home = () => {
 	};
 
 	if (error) {
-		return <div className="text-center text-white">Error: {error}</div>;
+		return <div className="text-center text-red-500">{error}</div>;
 	}
 
 	return (
@@ -199,7 +209,7 @@ const Home = () => {
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.5 }}
-				className="text-5xl font-normal mb-6 text-center"
+				className="text-5xl font-normal mb-6 text-center text-white"
 			>
 				Welcome to VisionaryAI
 			</motion.h1>
@@ -207,21 +217,23 @@ const Home = () => {
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.5, delay: 0.2 }}
-				className="text-xl mb-12 text-center font-light"
+				className="text-xl mb-12 text-center text-gray-300"
 			>
-				Explore our cutting-edge AI models for image processing and natural
-				language understanding
+				Explore our cutting-edge AI models for image processing and natural language understanding
 			</motion.p>
+
 			{isAdmin && !isAdding && !editingFeature && (
-				<div className="mb-8">
+				<div className="mb-8 text-center">
 					<button
 						onClick={() => setIsAdding(true)}
-						className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
+						className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold transition duration-300 shadow-lg inline-flex items-center"
 					>
+						<LightBulbIcon className="h-5 w-5 mr-2" />
 						Add New Feature
 					</button>
 				</div>
 			)}
+
 			{isAdding && (
 				<FeatureForm
 					onSubmit={handleAddOrUpdateFeature}
@@ -229,6 +241,7 @@ const Home = () => {
 					modelUrls={modelUrls}
 				/>
 			)}
+
 			{editingFeature && (
 				<FeatureForm
 					feature={editingFeature}
@@ -237,10 +250,14 @@ const Home = () => {
 					modelUrls={modelUrls}
 				/>
 			)}
+
 			{isLoading ? (
-				<div className="text-center text-white">Loading...</div>
+				<div className="text-center text-white">
+					<div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+					<p className="mt-2">Loading...</p>
+				</div>
 			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 					{features.map((feature, index) => (
 						<motion.div
 							key={feature.id}
@@ -258,6 +275,51 @@ const Home = () => {
 					))}
 				</div>
 			)}
+
+			<div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+				<motion.div
+					initial={{ opacity: 0, x: -20 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.5, delay: 0.3 }}
+					className="bg-gray-800 p-6 rounded-lg shadow-lg"
+				>
+					<div className="flex items-center mb-4">
+						<CloudArrowDownIcon className="h-8 w-8 text-blue-500 mr-2" />
+						<h2 className="text-2xl font-semibold text-white">Download Our App</h2>
+					</div>
+					<p className="text-gray-300 mb-4">
+						Experience VisionaryAI on the go! Our mobile app brings the power of AI to your fingertips.
+					</p>
+					<Link
+						to="/app-download"
+						className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300"
+					>
+						Get the App
+					</Link>
+				</motion.div>
+
+				<motion.div
+					initial={{ opacity: 0, x: 20 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.5, delay: 0.4 }}
+					className="bg-gray-800 p-6 rounded-lg shadow-lg"
+				>
+					<div className="flex items-center mb-4">
+						<HeartIcon className="h-8 w-8 text-red-500 mr-2" />
+						<h2 className="text-2xl font-semibold text-white">Support Our Project</h2>
+					</div>
+					<p className="text-gray-300 mb-4">
+						Help us continue developing innovative AI solutions. Your support makes a difference!
+					</p>
+					<Link
+						to="/donation"
+						className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
+					>
+						Support Us
+					</Link>
+				</motion.div>
+			</div>
+
 			<AnimatePresence>
 				{deleteConfirmation && (
 					<DeleteConfirmationModal

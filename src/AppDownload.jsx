@@ -52,7 +52,7 @@ const AppDownload = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-4xl font-bold mb-8 text-center text-white"
+                className="text-4xl font-normal mb-8 text-center text-white"
             >
                 Download VisionaryAI App
             </motion.h1>
@@ -74,7 +74,7 @@ const AppDownload = () => {
             </div>
 
             <div className="mt-16">
-                <h2 className="text-2xl font-bold mb-8 text-center text-white">App Screenshots</h2>
+                <h2 className="text-2xl font-normal mb-8 text-center text-white">App Screenshots</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                     {screenshots.map((screenshot, index) => (
                         <motion.div
@@ -103,7 +103,7 @@ const AppDownload = () => {
                 transition={{ duration: 0.5, delay: 0.5 }}
                 className="mt-16 text-center"
             >
-                <h2 className="text-2xl font-bold mb-4 text-white">System Requirements</h2>
+                <h2 className="text-2xl font-normal mb-4 text-white">System Requirements</h2>
                 <ul className="text-gray-300 list-disc list-inside">
                     <li>Android 6.0 and above</li>
                     <li>2GB RAM or more</li>

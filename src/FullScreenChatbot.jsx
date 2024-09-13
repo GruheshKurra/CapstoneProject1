@@ -218,7 +218,7 @@ const FullScreenChatbot = ({ isOpen, onClose }) => {
                         >
                             <Bars3Icon className="h-6 w-6" />
                         </button>
-                        <h2 className="text-xl md:text-2xl font-bold text-white">Visionary Chat</h2>
+                        <h2 className="text-xl md:text-2xl font-normal text-white">Visionary Chat</h2>
                     </div>
                     <button onClick={onClose} className="text-white hover:text-indigo-400 transition duration-300">
                         <XMarkIcon className="h-6 w-6" />
