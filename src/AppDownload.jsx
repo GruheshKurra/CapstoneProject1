@@ -35,7 +35,7 @@ const AppDownload = () => {
         setScreenshots(screenshotResults.filter(screenshot => screenshot !== null));
 
         // Set the APK file URL from Google Drive
-        setApkUrl('https://drive.google.com/uc?export=download&id=1_1MJ2x5fIuFUK_VQNu63LzK7kiH99shQ');
+        setApkUrl('https://drive.google.com/file/d/1_1MJ2x5fIuFUK_VQNu63LzK7kiH99shQ/view?usp=sharing');
     };
 
     const handleDownload = () => {
