@@ -1,28 +1,59 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { motion } from "framer-motion";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { supabase } from './supabaseClient'; // Adjust this import based on where you've set up your Supabase client
 
 const AppDownload = () => {
-    const handleDownload = () => {
-        const apkUrl = '../src/Assets/visionary.aab';
-        const link = document.createElement('a');
-        link.href = apkUrl;
-        link.download = 'VisionaryAI.apk';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const [screenshots, setScreenshots] = useState([]);
+    const [apkUrl, setApkUrl] = useState('');
+
+    useEffect(() => {
+        fetchAssets();
+    }, []);
+
+    const fetchAssets = async () => {
+        const screenshotNames = ['login', 'profile', 'sidebar', 'home', 'modelslist', 'samplemodel', 'cloudstorage', 'team'];
+        const screenshotPromises = screenshotNames.map(async (name) => {
+            const { data, error } = await supabase
+                .storage
+                .from('assets')
+                .getPublicUrl(`${name}.jpg`);
+
+            if (error) {
+                console.error(`Error fetching ${name}.jpg:`, error);
+                return null;
+            }
+
+            return {
+                name,
+                title: name.charAt(0).toUpperCase() + name.slice(1),
+                url: data.publicUrl
+            };
+        });
+
+        const screenshotResults = await Promise.all(screenshotPromises);
+        setScreenshots(screenshotResults.filter(screenshot => screenshot !== null));
+
+        // Fetch APK file URL
+        const { data: apkData, error: apkError } = await supabase
+            .storage
+            .from('assets')
+            .getPublicUrl('VisionaryAI.apk');
+
+        if (apkError) {
+            console.error('Error fetching APK:', apkError);
+        } else {
+            setApkUrl(apkData.publicUrl);
+        }
     };
 
-    const screenshots = [
-        { name: 'login', title: 'Login Page' },
-        { name: 'profile', title: 'User Profile' },
-        { name: 'sidebar', title: 'Navigation Sidebar' },
-        { name: 'home', title: 'Home Screen' },
-        { name: 'modelslist', title: 'AI Models List' },
-        { name: 'samplemodel', title: 'Sample AI Model' },
-        { name: 'cloudstorage', title: 'Cloud Storage' },
-        { name: 'team', title: 'Team Page' }
-    ];
+    const handleDownload = () => {
+        if (apkUrl) {
+            window.location.href = apkUrl;
+        } else {
+            console.error('APK URL not available');
+        }
+    };
 
     return (
         <div className="container mx-auto px-4 py-16">
@@ -63,7 +94,7 @@ const AppDownload = () => {
                             className="bg-gray-800 rounded-lg overflow-hidden shadow-lg"
                         >
                             <img
-                                src={`/src/Assets/${screenshot.name}.jpg`}
+                                src={screenshot.url}
                                 alt={screenshot.title}
                                 className="w-full h-auto"
                             />
