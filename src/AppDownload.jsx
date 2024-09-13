@@ -34,17 +34,8 @@ const AppDownload = () => {
         const screenshotResults = await Promise.all(screenshotPromises);
         setScreenshots(screenshotResults.filter(screenshot => screenshot !== null));
 
-        // Fetch APK file URL
-        const { data: apkData, error: apkError } = await supabase
-            .storage
-            .from('assets')
-            .getPublicUrl('VisionaryAI.apk');
-
-        if (apkError) {
-            console.error('Error fetching APK:', apkError);
-        } else {
-            setApkUrl(apkData.publicUrl);
-        }
+        // Set the APK file URL from Google Drive
+        setApkUrl('https://drive.google.com/uc?export=download&id=1_1MJ2x5fIuFUK_VQNu63LzK7kiH99shQ');
     };
 
     const handleDownload = () => {
