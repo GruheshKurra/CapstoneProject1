@@ -19,6 +19,8 @@ import RestrictedPage from "./RestrictedPage";
 import Chatbot from "./Chatbot";
 import ChatHistory from "./ChatHistory";
 import CloudStorage from "./CloudStorage";
+import Donation from "./Donation";
+import AppDownload from "./AppDownload";
 
 function App() {
   const [urls, setUrls] = useState([]);
@@ -53,6 +55,8 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/team" element={<Team />} />
               <Route path="/project-details" element={<ProjectDetails />} />
+              <Route path="/donation" element={<Donation />} />
+              <Route path="/app-download" element={<AppDownload />} />
               <Route
                 path="/models/:modelName"
                 element={
