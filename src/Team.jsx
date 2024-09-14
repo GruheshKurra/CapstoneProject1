@@ -5,19 +5,19 @@ import { UserCircleIcon } from "@heroicons/react/24/outline";
 const teamMembers = [
 	{
 		name: "Karthik",
-		role: "AI Research Lead",
+		role: "",
 		bio: "",
 		imageUrl: "/karthik.jpg"
 	},
 	{
 		name: "Sathwik",
-		role: "Full Stack Developer",
+		role: "",
 		bio: "",
 		imageUrl: "/sathwik.jpg"
 	},
 	{
 		name: "Sushma",
-		role: "Data Scientist",
+		role: "",
 		bio: "",
 		imageUrl: "/sushma.jpg"
 	}

@@ -254,8 +254,8 @@ const ProjectDetails = () => {
 				</h2>
 				<ul className="list-disc list-inside text-gray-300 space-y-2">
 					<li>Frontend: React with Tailwind CSS for responsive design</li>
-					<li>Backend: Supabase for authentication and database management</li>
-					<li>AI Models: Integrated via API calls to specialized model endpoints</li>
+					<li>Backend: Cloud Database for authentication and database management</li>
+					<li>AI Models: Integrated via Gradio to React</li>
 					<li>Deployment: Hosted on cloud infrastructure for scalability</li>
 				</ul>
 			</section>
