@@ -4,83 +4,33 @@ import { supabase } from "./supabaseClient";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
-
-const EditForm = ({ detail, onCancel, onSave }) => {
-	const [editedDetail, setEditedDetail] = useState({ ...detail });
-
-	const handleInputChange = (e) => {
-		const { name, value } = e.target;
-		setEditedDetail(prev => ({
-			...prev,
-			[name]: name === "tech_stack" ? value.split(",").map(item => item.trim()) : value
-		}));
-	};
-
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		onSave(editedDetail);
-	};
-
-	return (
-		<form onSubmit={handleSubmit} className="space-y-4">
-			<input
-				type="text"
-				name="title"
-				value={editedDetail.title}
-				onChange={handleInputChange}
-				className="w-full p-2 bg-gray-700 text-white rounded"
-				required
-			/>
-			<textarea
-				name="description"
-				value={editedDetail.description}
-				onChange={handleInputChange}
-				className="w-full p-2 bg-gray-700 text-white rounded"
-				required
-			/>
-			<input
-				type="text"
-				name="tech_stack"
-				value={editedDetail.tech_stack.join(", ")}
-				onChange={handleInputChange}
-				className="w-full p-2 bg-gray-700 text-white rounded"
-				placeholder="Comma-separated tech stack"
-				required
-			/>
-			<div>
-				<button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Save</button>
-				<button type="button" onClick={onCancel} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
-			</div>
-		</form>
-	);
-};
+import {
+	LightBulbIcon,
+	CodeBracketIcon,
+	CpuChipIcon,
+	PencilIcon,
+	TrashIcon,
+	PlusIcon
+} from "@heroicons/react/24/outline";
 
 const ProjectDetails = () => {
 	const [details, setDetails] = useState([]);
-	const [presentations, setPresentations] = useState([]);
-	const [loading, setLoading] = useState(true);
-	const [editingId, setEditingId] = useState(null);
-	const [newDetail, setNewDetail] = useState({
-		title: "",
-		description: "",
-		tech_stack: [],
-	});
-	const [newPresentation, setNewPresentation] = useState({
-		title: "",
-		link: "",
-	});
-	const { user } = useAuth();
-	const isAdmin = user && user.email === "gruheshkurra2@gmail.com";
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const [editingItem, setEditingItem] = useState(null);
+	const [isAdding, setIsAdding] = useState(false);
 	const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+	const { user } = useAuth();
+
+	const isAdmin = user && user.email === "gruheshkurra2@gmail.com";
 
 	useEffect(() => {
 		fetchProjectDetails();
-		fetchPresentations();
 	}, []);
 
 	const fetchProjectDetails = async () => {
 		try {
-			setLoading(true);
+			setIsLoading(true);
 			const { data, error } = await supabase
 				.from("project_details")
 				.select("*")
@@ -90,160 +40,141 @@ const ProjectDetails = () => {
 			setDetails(data || []);
 		} catch (error) {
 			console.error("Error fetching project details:", error);
+			setError("Failed to fetch project details. Please try again later.");
 			toast.error("Failed to fetch project details");
 		} finally {
-			setLoading(false);
+			setIsLoading(false);
 		}
 	};
 
-	const fetchPresentations = async () => {
+	const handleAddOrUpdateDetail = async (detailData) => {
 		try {
-			const { data, error } = await supabase
-				.from("project_presentations")
-				.select("*")
-				.order("created_at", { ascending: false });
-
-			if (error) throw error;
-			setPresentations(data || []);
-		} catch (error) {
-			console.error("Error fetching presentations:", error);
-			toast.error("Failed to fetch presentations");
-		}
-	};
-
-	const handleNewDetailInputChange = (e) => {
-		const { name, value } = e.target;
-		setNewDetail(prev => ({
-			...prev,
-			[name]: name === "tech_stack" ? value.split(",").map(item => item.trim()) : value
-		}));
-	};
-
-	const handlePresentationInputChange = (e) => {
-		const { name, value } = e.target;
-		setNewPresentation({ ...newPresentation, [name]: value });
-	};
-
-	const handleSubmitNewDetail = async (e) => {
-		e.preventDefault();
-		try {
-			const { data, error } = await supabase
-				.from("project_details")
-				.insert([newDetail]);
-
-			if (error) throw error;
-			toast.success("New project detail added successfully");
-			setNewDetail({ title: "", description: "", tech_stack: [] });
+			if (detailData.id) {
+				const { error } = await supabase
+					.from("project_details")
+					.update(detailData)
+					.eq("id", detailData.id);
+				if (error) throw error;
+				toast.success("Detail updated successfully");
+			} else {
+				const { error } = await supabase
+					.from("project_details")
+					.insert(detailData);
+				if (error) throw error;
+				toast.success("Detail added successfully");
+			}
 			fetchProjectDetails();
+			setEditingItem(null);
+			setIsAdding(false);
 		} catch (error) {
-			console.error("Error submitting new project detail:", error);
-			toast.error("Failed to add new project detail");
+			console.error("Error adding/updating detail:", error);
+			toast.error(detailData.id ? "Failed to update detail" : "Failed to add detail");
 		}
 	};
 
-	const handleUpdateDetail = async (updatedDetail) => {
-		try {
-			const { error } = await supabase
-				.from("project_details")
-				.update(updatedDetail)
-				.eq("id", updatedDetail.id);
-
-			if (error) throw error;
-			toast.success("Project detail updated successfully");
-			setEditingId(null);
-			fetchProjectDetails();
-		} catch (error) {
-			console.error("Error updating project detail:", error);
-			toast.error("Failed to update project detail");
-		}
-	};
-
-	const handlePresentationSubmit = async (e) => {
-		e.preventDefault();
-		try {
-			const { data, error } = await supabase
-				.from("project_presentations")
-				.insert([newPresentation]);
-
-			if (error) throw error;
-			toast.success("New presentation added successfully");
-			setNewPresentation({ title: "", link: "" });
-			fetchPresentations();
-		} catch (error) {
-			console.error("Error submitting presentation:", error);
-			toast.error("Failed to submit presentation");
-		}
-	};
-
-	const handleDelete = async (id) => {
+	const handleDeleteDetail = async (id) => {
 		try {
 			const { error } = await supabase
 				.from("project_details")
 				.delete()
 				.eq("id", id);
-
 			if (error) throw error;
-			toast.success("Project detail deleted successfully");
+			toast.success("Detail deleted successfully");
 			fetchProjectDetails();
 		} catch (error) {
-			console.error("Error deleting project detail:", error);
-			toast.error("Failed to delete project detail");
+			console.error("Error deleting detail:", error);
+			toast.error("Failed to delete detail");
 		}
 		setDeleteConfirmation(null);
 	};
 
-	const handlePresentationDelete = async (id) => {
-		try {
-			const { error } = await supabase
-				.from("project_presentations")
-				.delete()
-				.eq("id", id);
-
-			if (error) throw error;
-			toast.success("Presentation deleted successfully");
-			fetchPresentations();
-		} catch (error) {
-			console.error("Error deleting presentation:", error);
-			toast.error("Failed to delete presentation");
-		}
-		setDeleteConfirmation(null);
-	};
-
-	const ProjectDetailCard = ({ detail }) => (
+	const DetailCard = ({ detail, isAdmin, onEdit, onDelete }) => (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.5 }}
-			className="bg-gray-800 p-6 rounded-lg shadow-lg h-full flex flex-col justify-between"
+			className="bg-gray-800 p-6 rounded-lg shadow-lg mb-6"
 		>
-			{editingId === detail.id ? (
-				<EditForm
-					detail={detail}
-					onCancel={() => setEditingId(null)}
-					onSave={handleUpdateDetail}
-				/>
-			) : (
-				<>
-					<div>
-						<h2 className="text-2xl font-normal mb-4">{detail.title}</h2>
-						<p className="mb-4 font-light">{detail.description}</p>
-						<h3 className="text-lg font-normal mb-2">Tech Stack:</h3>
-						<ul className="list-disc list-inside font-light mb-4">
-							{detail.tech_stack.map((tech, index) => (
-								<li key={index}>{tech}</li>
-							))}
-						</ul>
-					</div>
-					{isAdmin && (
-						<div className="mt-4">
-							<button onClick={() => setEditingId(detail.id)} className="bg-yellow-500 text-white px-4 py-2 rounded mr-2">Edit</button>
-							<button onClick={() => setDeleteConfirmation({ type: 'detail', id: detail.id, title: detail.title })} className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
-						</div>
-					)}
-				</>
+			<h3 className="text-xl font-semibold mb-2 text-white">{detail.title}</h3>
+			<p className="text-gray-300 mb-4">{detail.content}</p>
+			{isAdmin && (
+				<div className="flex justify-end space-x-2">
+					<button
+						onClick={() => onEdit(detail)}
+						className="text-blue-400 hover:text-blue-300 transition duration-300"
+					>
+						<PencilIcon className="h-5 w-5" />
+					</button>
+					<button
+						onClick={() => onDelete(detail)}
+						className="text-red-400 hover:text-red-300 transition duration-300"
+					>
+						<TrashIcon className="h-5 w-5" />
+					</button>
+				</div>
 			)}
 		</motion.div>
 	);
+
+	const DetailForm = ({ detail, onSubmit, onCancel }) => {
+		const [title, setTitle] = useState(detail?.title || "");
+		const [content, setContent] = useState(detail?.content || "");
+
+		const handleSubmit = (e) => {
+			e.preventDefault();
+			onSubmit({ id: detail?.id, title, content });
+		};
+
+		return (
+			<form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+				<div className="mb-4">
+					<label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
+						Title
+					</label>
+					<input
+						type="text"
+						id="title"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+						className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
+						required
+					/>
+				</div>
+				<div className="mb-4">
+					<label htmlFor="content" className="block text-sm font-medium text-gray-300 mb-2">
+						Content
+					</label>
+					<textarea
+						id="content"
+						value={content}
+						onChange={(e) => setContent(e.target.value)}
+						className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
+						rows={4}
+						required
+					/>
+				</div>
+				<div className="flex justify-end space-x-2">
+					<button
+						type="button"
+						onClick={onCancel}
+						className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition duration-300"
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
+					>
+						{detail ? "Update" : "Add"} Detail
+					</button>
+				</div>
+			</form>
+		);
+	};
+
+	if (error) {
+		return <div className="text-center text-red-500">{error}</div>;
+	}
 
 	return (
 		<div className="container mx-auto px-4 py-16">
@@ -251,145 +182,89 @@ const ProjectDetails = () => {
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.5 }}
-				className="text-4xl font-normal mb-8 text-center"
+				className="text-4xl font-semibold mb-8 text-center text-white"
 			>
-				Project Details
+				VisionaryAI Project Details
 			</motion.h1>
 
-			{isAdmin && (
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-					className="mb-8"
-				>
-					<h2 className="text-2xl font-normal mb-4">Add New Project Detail</h2>
-					<form onSubmit={handleSubmitNewDetail} className="space-y-4">
-						<input
-							type="text"
-							name="title"
-							value={newDetail.title}
-							onChange={handleNewDetailInputChange}
-							placeholder="Title"
-							className="w-full p-2 bg-gray-700 text-white rounded"
-							required
-						/>
-						<textarea
-							name="description"
-							value={newDetail.description}
-							onChange={handleNewDetailInputChange}
-							placeholder="Description"
-							className="w-full p-2 bg-gray-700 text-white rounded"
-							required
-						/>
-						<input
-							type="text"
-							name="tech_stack"
-							value={newDetail.tech_stack.join(", ")}
-							onChange={handleNewDetailInputChange}
-							placeholder="Comma-separated tech stack"
-							className="w-full p-2 bg-gray-700 text-white rounded"
-							required
-						/>
-						<button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">Add Project Detail</button>
-					</form>
-				</motion.div>
-			)}
+			<section className="mb-12">
+				<h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
+					<LightBulbIcon className="h-6 w-6 mr-2 text-yellow-400" />
+					Project Overview
+				</h2>
+				<p className="text-gray-300 mb-4">
+					VisionaryAI is an innovative project that leverages cutting-edge artificial intelligence
+					technologies to solve complex problems in various domains. Our platform integrates
+					multiple AI models, providing users with powerful tools for image processing, natural
+					language understanding, and data analysis.
+				</p>
+			</section>
 
-			{loading ? (
-				<p className="text-center">Loading project details...</p>
-			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					{details.map((detail) => (
-						<ProjectDetailCard
+			<section className="mb-12">
+				<h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
+					<CpuChipIcon className="h-6 w-6 mr-2 text-blue-400" />
+					Key Features
+				</h2>
+				{isLoading ? (
+					<div className="text-center text-white">Loading...</div>
+				) : (
+					details.map((detail) => (
+						<DetailCard
 							key={detail.id}
 							detail={detail}
+							isAdmin={isAdmin}
+							onEdit={setEditingItem}
+							onDelete={() => setDeleteConfirmation(detail)}
 						/>
-					))}
-				</div>
-			)}
-
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, delay: 0.4 }}
-				className="mt-12 text-center"
-			>
-				<h2 className="text-2xl font-normal mb-4">Overall Architecture</h2>
-				<p className="mb-4 font-light">
-					Our project is built on a React frontend, with each AI model running
-					in a separate Jupyter notebook environment. The models are exposed
-					through Gradio interfaces, which are embedded in our React components.
-					This architecture allows for easy development and deployment of AI
-					models while providing a unified, user-friendly interface.
-				</p>
-			</motion.div>
-
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, delay: 0.5 }}
-				className="mt-12"
-			>
-				<h2 className="text-2xl font-normal mb-4 text-center">Project Presentations</h2>
-				<div className="flex flex-wrap justify-center gap-4">
-					{presentations.map((presentation) => (
-						<div key={presentation.id} className="relative">
-							<a
-								href={presentation.link}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300 inline-block"
-							>
-								{presentation.title}
-							</a>
-							{isAdmin && (
-								<button
-									onClick={() => setDeleteConfirmation({ type: 'presentation', id: presentation.id, title: presentation.title })}
-									className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-								>
-									&times;
-								</button>
-							)}
-						</div>
-					))}
-				</div>
-				{isAdmin && (
-					<form onSubmit={handlePresentationSubmit} className="mt-6 flex flex-col items-center">
-						<input
-							type="text"
-							name="title"
-							value={newPresentation.title}
-							onChange={handlePresentationInputChange}
-							placeholder="Presentation Title"
-							className="w-full max-w-md p-2 mb-2 bg-gray-700 text-white rounded"
-							required
-						/>
-						<input
-							type="url"
-							name="link"
-							value={newPresentation.link}
-							onChange={handlePresentationInputChange}
-							placeholder="Presentation Link"
-							className="w-full max-w-md p-2 mb-2 bg-gray-700 text-white rounded"
-							required
-						/>
-						<button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">Add Presentation</button>
-					</form>
+					))
 				)}
-			</motion.div>
+				{isAdmin && (
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5 }}
+						className="mt-4"
+					>
+						{isAdding || editingItem ? (
+							<DetailForm
+								detail={editingItem}
+								onSubmit={handleAddOrUpdateDetail}
+								onCancel={() => {
+									setIsAdding(false);
+									setEditingItem(null);
+								}}
+							/>
+						) : (
+							<button
+								onClick={() => setIsAdding(true)}
+								className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300 flex items-center"
+							>
+								<PlusIcon className="h-5 w-5 mr-2" />
+								Add New Feature
+							</button>
+						)}
+					</motion.div>
+				)}
+			</section>
+
+			<section className="mb-12">
+				<h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
+					<CodeBracketIcon className="h-6 w-6 mr-2 text-green-400" />
+					Technical Details
+				</h2>
+				<ul className="list-disc list-inside text-gray-300 space-y-2">
+					<li>Frontend: React with Tailwind CSS for responsive design</li>
+					<li>Backend: Supabase for authentication and database management</li>
+					<li>AI Models: Integrated via API calls to specialized model endpoints</li>
+					<li>Deployment: Hosted on cloud infrastructure for scalability</li>
+				</ul>
+			</section>
 
 			<AnimatePresence>
 				{deleteConfirmation && (
 					<DeleteConfirmationModal
 						itemName={deleteConfirmation.title}
-						onConfirm={() => {
-							if (deleteConfirmation.type === 'detail') {
-								handleDelete(deleteConfirmation.id);
-							} else {
-								handlePresentationDelete(deleteConfirmation.id);
-							}
-						}}
+						onConfirm={() => handleDeleteDetail(deleteConfirmation.id)}
 						onCancel={() => setDeleteConfirmation(null)}
 					/>
 				)}

@@ -4,34 +4,40 @@ import { supabase } from "./supabaseClient";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
+import {
+	PencilIcon,
+	TrashIcon,
+	PlusIcon
+} from "@heroicons/react/24/outline";
 
-const ContentItem = ({ item, isAdmin, onEdit, onDelete }) => (
+const ContentCard = ({ item, isAdmin, onEdit, onDelete }) => (
 	<motion.div
 		initial={{ opacity: 0, y: 20 }}
 		animate={{ opacity: 1, y: 0 }}
-		transition={{ duration: 0.5, delay: item.order_index * 0.1 }}
-		className="mb-12 bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+		transition={{ duration: 0.5 }}
+		className="bg-gray-800 p-6 rounded-lg shadow-lg relative overflow-hidden mb-6"
 	>
-		<div className="p-6">
-			<h2 className="text-2xl font-semibold mb-4 text-white">{item.title}</h2>
-			<p className="text-gray-300 leading-relaxed">{item.content}</p>
-			{isAdmin && (
-				<div className="mt-4 flex justify-end space-x-2">
-					<button
-						onClick={() => onEdit(item)}
-						className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-300"
-					>
-						Edit
-					</button>
-					<button
-						onClick={() => onDelete(item)}
-						className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition duration-300"
-					>
-						Delete
-					</button>
-				</div>
-			)}
-		</div>
+		<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+		<h3 className="text-xl font-semibold mb-2 text-white">{item.title}</h3>
+		<p className="text-gray-300 mb-4">{item.content}</p>
+		{isAdmin && (
+			<div className="absolute top-2 right-2 space-x-2">
+				<button
+					onClick={() => onEdit(item)}
+					className="text-blue-400 hover:text-blue-300 transition duration-300"
+					title="Edit"
+				>
+					<PencilIcon className="h-5 w-5" />
+				</button>
+				<button
+					onClick={() => onDelete(item)}
+					className="text-red-400 hover:text-red-300 transition duration-300"
+					title="Delete"
+				>
+					<TrashIcon className="h-5 w-5" />
+				</button>
+			</div>
+		)}
 	</motion.div>
 );
 
@@ -90,15 +96,15 @@ const ContentForm = ({ item, onSubmit, onCancel }) => {
 				<button
 					type="button"
 					onClick={onCancel}
-					className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition duration-300"
+					className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition duration-300"
 				>
 					Cancel
 				</button>
 				<button
 					type="submit"
-					className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+					className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
 				>
-					Save
+					{item ? "Update" : "Add"} Content
 				</button>
 			</div>
 		</form>
@@ -190,55 +196,55 @@ const About = () => {
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.5 }}
-				className="text-5xl font-normal mb-12 text-center text-white"
+				className="text-4xl font-semibold mb-8 text-center text-white"
 			>
 				About VisionaryAI
 			</motion.h1>
-			<div className="max-w-3xl mx-auto">
-				{isAdmin && !isAdding && !editingItem && (
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5 }}
-						className="mb-8"
-					>
-						<button
-							onClick={() => setIsAdding(true)}
-							className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold transition duration-300 shadow-lg"
-						>
-							Add New Content
-						</button>
-					</motion.div>
-				)}
-				{isAdding && (
-					<ContentForm
-						onSubmit={handleAddOrUpdateContent}
-						onCancel={() => setIsAdding(false)}
-					/>
-				)}
-				{editingItem && (
-					<ContentForm
-						item={editingItem}
-						onSubmit={handleAddOrUpdateContent}
-						onCancel={() => setEditingItem(null)}
-					/>
-				)}
-				{isLoading ? (
-					<div className="flex justify-center items-center h-64">
-						<div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-					</div>
-				) : (
-					content.map((item) => (
-						<ContentItem
+
+			{isLoading ? (
+				<div className="text-center text-white">Loading...</div>
+			) : (
+				<div className="space-y-6">
+					{content.map((item) => (
+						<ContentCard
 							key={item.id}
 							item={item}
 							isAdmin={isAdmin}
 							onEdit={setEditingItem}
 							onDelete={() => setDeleteConfirmation(item)}
 						/>
-					))
-				)}
-			</div>
+					))}
+				</div>
+			)}
+
+			{isAdmin && (
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5 }}
+					className="mt-8"
+				>
+					{isAdding || editingItem ? (
+						<ContentForm
+							item={editingItem}
+							onSubmit={handleAddOrUpdateContent}
+							onCancel={() => {
+								setIsAdding(false);
+								setEditingItem(null);
+							}}
+						/>
+					) : (
+						<button
+							onClick={() => setIsAdding(true)}
+							className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300 flex items-center mx-auto"
+						>
+							<PlusIcon className="h-5 w-5 mr-2" />
+							Add New Content
+						</button>
+					)}
+				</motion.div>
+			)}
+
 			<AnimatePresence>
 				{deleteConfirmation && (
 					<DeleteConfirmationModal
