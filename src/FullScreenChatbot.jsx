@@ -72,7 +72,18 @@ const FullScreenChatbot = ({ isOpen, onClose }) => {
             }
             grouped[message.session_id].messages.push(message);
         });
-        return Object.values(grouped).sort((a, b) => b.messages[0].timestamp.localeCompare(a.messages[0].timestamp));
+        
+        // Sort messages within each chat session chronologically
+        Object.values(grouped).forEach(chat => {
+            chat.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        });
+        
+        // Convert to array and sort chat sessions by most recent message
+        return Object.values(grouped).sort((a, b) => {
+            const lastMessageA = a.messages[a.messages.length - 1];
+            const lastMessageB = b.messages[b.messages.length - 1];
+            return new Date(lastMessageB.timestamp) - new Date(lastMessageA.timestamp);
+        });
     };
 
     const saveMessageToSupabase = async (message) => {
