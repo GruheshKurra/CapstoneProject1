@@ -16,7 +16,7 @@ import {
 import { supabase } from './supabaseClient';
 import { useAuth } from './AuthContext';
 
-const API_KEY = "AIzaSyBRY_8YjuuJilqx7X4tKpmRuVYvHMVwTe4";
+const API_KEY = "AIzaSyArRKw8RnXwURwAZ_k84aJcJG0ouGF_-jU";
 
 const FullScreenChatbot = ({ isOpen, onClose }) => {
     const [input, setInput] = useState('');
