@@ -17,7 +17,7 @@ import { supabase } from './supabaseClient';
 import { useAuth } from './AuthContext';
 import FullScreenChatbot from './FullScreenChatbot';
 
-const API_KEY = "AIzaSyBRY_8YjuuJilqx7X4tKpmRuVYvHMVwTe4";
+const API_KEY = "AIzaSyArRKw8RnXwURwAZ_k84aJcJG0ouGF_-jU";
 
 const websiteContext = `
 You are an AI assistant for VisionaryAI, a website that showcases various AI models for image processing and natural language understanding. The website includes the following pages and features:
