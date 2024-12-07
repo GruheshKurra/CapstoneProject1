@@ -50,12 +50,12 @@ const ModelPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="text-center mb-12"
+                    className="text-center mb-8"
                 >
                     <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
                         {modelName}
@@ -128,10 +128,10 @@ const ContentState = ({ url, modelName, onLoad, onError }) => (
         className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden"
     >
         {url ? (
-            <div className="relative pb-[56.25%] h-0">
+            <div className="h-screen max-h-[800px]">
                 <iframe
                     src={url}
-                    className="absolute top-0 left-0 w-full h-full border-0"
+                    className="w-full h-full border-0 rounded-lg"
                     title={`${modelName} Interface`}
                     onLoad={onLoad}
                     onError={onError}
